@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-sand text-ink antialiased;
+}
+
+::selection {
+  background: rgba(202, 107, 61, 0.22);
+}
+
+.section-shell {
+  @apply mx-auto max-w-7xl px-6 lg:px-10;
+}
+
+.eyebrow {
+  @apply font-mono text-xs uppercase tracking-[0.3em] text-slate;
+}
