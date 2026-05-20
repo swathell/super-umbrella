@@ -7,11 +7,16 @@ export default function AdminPage() {
         <p className="eyebrow text-sand/65">Admin foundation</p>
         <h1 className="text-5xl font-extrabold tracking-tight">Internal workspace starts here.</h1>
         <p className="max-w-2xl text-lg leading-8 text-sand/80">
-          This route is reserved for the next phase: lead review, project triage, notes, statuses, and the operating layer behind the public site.
+          The first internal layer is now in place. The next phase is adding authentication, editable statuses, notes, and the rest of the operating system behind the public site.
         </p>
-        <Link href="/contact" className="inline-flex rounded-full bg-sand px-6 py-3 font-semibold text-ink">
-          Test the intake flow
-        </Link>
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <Link href="/admin/leads" className="inline-flex rounded-full bg-sand px-6 py-3 font-semibold text-ink">
+            Open leads
+          </Link>
+          <Link href="/contact" className="inline-flex rounded-full border border-white/20 px-6 py-3 font-semibold text-sand">
+            Test the intake flow
+          </Link>
+        </div>
       </div>
     </main>
   );

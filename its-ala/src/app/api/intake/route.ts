@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createLead } from "@/lib/leads";
 
 type IntakePayload = {
   name?: string;
   email?: string;
+  company?: string;
   projectType?: string;
   budget?: string;
+  timeline?: string;
   summary?: string;
 };
 
@@ -17,9 +20,11 @@ export async function POST(request: NextRequest) {
 
   const name = body.name?.trim() || "";
   const email = body.email?.trim() || "";
+  const company = body.company?.trim() || "Independent / not provided";
   const summary = body.summary?.trim() || "";
   const projectType = body.projectType?.trim() || "Unknown";
   const budget = body.budget?.trim() || "Unknown";
+  const timeline = body.timeline?.trim() || "Unknown";
 
   if (!name || !email || !summary) {
     return NextResponse.json(
@@ -32,6 +37,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Please enter a valid email address." }, { status: 400 });
   }
 
+  const { storage } = await createLead({
+    name,
+    email,
+    company,
+    projectType,
+    budget,
+    timeline,
+    summary,
+    source: "website",
+  });
+
   const notificationEmail = process.env.NOTIFICATION_EMAIL;
   const resendApiKey = process.env.RESEND_API_KEY;
 
@@ -39,9 +55,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         message:
-          "The form is wired up, but email delivery is not configured yet. Add NOTIFICATION_EMAIL and RESEND_API_KEY in Vercel to make submissions go live.",
+          `Inquiry saved (${storage} storage). Add NOTIFICATION_EMAIL and RESEND_API_KEY in Vercel to turn on email notifications.`,
       },
-      { status: 503 },
+      { status: 200 },
     );
   }
 
@@ -59,8 +75,10 @@ export async function POST(request: NextRequest) {
         <h2>New Its Ala inquiry</h2>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Company:</strong> ${company}</p>
         <p><strong>Project type:</strong> ${projectType}</p>
         <p><strong>Budget:</strong> ${budget}</p>
+        <p><strong>Timeline:</strong> ${timeline}</p>
         <p><strong>Summary:</strong></p>
         <p>${summary.replace(/\n/g, "<br />")}</p>
       `,
@@ -75,6 +93,7 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({
-    message: "Inquiry sent. You should receive a clear next-step reply rather than a vague sales bounce.",
+    message:
+      "Inquiry sent and saved. You should receive a clear next-step reply rather than a vague sales bounce.",
   });
 }

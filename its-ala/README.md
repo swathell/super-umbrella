@@ -29,11 +29,14 @@
 
 - Marketing pages
 - Working intake UI and API route foundation
-- Admin placeholder area for the next phase
+- Lead storage via Vercel Postgres when configured
+- Local fallback storage for development
+- Basic admin leads list and detail views
 
 ## Next phase
 
 - Email delivery with Resend
-- Submission storage
-- Lead dashboard
+- Authentication for admin routes
+- Lead status editing
+- Durable production-ready storage confirmation
 - Client workspaces

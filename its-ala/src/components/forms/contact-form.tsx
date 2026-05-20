@@ -17,25 +17,30 @@ export function ContactForm() {
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
 
-    const response = await fetch("/api/intake", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetch("/api/intake", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-    const data = (await response.json()) as { message: string };
+      const data = (await response.json()) as { message: string };
 
-    if (!response.ok) {
+      if (!response.ok) {
+        setState("error");
+        setMessage(data.message || "Something went wrong.");
+        return;
+      }
+
+      form.reset();
+      setState("success");
+      setMessage(data.message);
+    } catch {
       setState("error");
-      setMessage(data.message || "Something went wrong.");
-      return;
+      setMessage("The request did not complete. Please try again.");
     }
-
-    form.reset();
-    setState("success");
-    setMessage(data.message);
   }
 
   return (
@@ -59,6 +64,30 @@ export function ContactForm() {
             className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-accent"
             placeholder="you@company.com"
           />
+        </label>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <label className="space-y-2">
+          <span className="text-sm font-semibold">Company or team</span>
+          <input
+            name="company"
+            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-accent"
+            placeholder="Its Ala"
+          />
+        </label>
+        <label className="space-y-2">
+          <span className="text-sm font-semibold">Ideal timeline</span>
+          <select
+            name="timeline"
+            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-accent"
+            defaultValue="Within 2 weeks"
+          >
+            <option>Within 2 weeks</option>
+            <option>Within 1 month</option>
+            <option>Flexible / exploring</option>
+            <option>Urgent</option>
+          </select>
         </label>
       </div>
 
@@ -120,8 +149,8 @@ export function ContactForm() {
         <p
           className={
             state === "success"
-              ? "text-sm font-medium text-green-700"
-              : "text-sm font-medium text-red-700"
+              ? "rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700"
+              : "rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
           }
         >
           {message}
