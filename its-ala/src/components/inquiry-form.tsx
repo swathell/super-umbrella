@@ -61,6 +61,10 @@ export function InquiryForm() {
         message?: string;
         errors?: Record<string, string>;
         storage?: string;
+        notifications?: {
+          operator: "sent" | "skipped" | "failed";
+          confirmation: "sent" | "skipped" | "failed";
+        };
       };
 
       if (!response.ok || !data.ok) {
@@ -75,11 +79,18 @@ export function InquiryForm() {
       setValues(initialValues);
       setErrors({});
       setStatus("success");
-      setMessage(
+      const storageMessage =
         data.storage === "postgres"
           ? "Inquiry sent. It was stored in production-ready database storage."
-          : "Inquiry sent. It was stored successfully using the local development fallback.",
-      );
+          : "Inquiry sent. It was stored successfully using the local development fallback.";
+
+      const notificationWarning =
+        data.notifications &&
+        (data.notifications.operator === "failed" || data.notifications.confirmation === "failed")
+          ? " Email delivery needs attention in this environment."
+          : "";
+
+      setMessage(`${storageMessage}${notificationWarning}`);
     } catch {
       setStatus("error");
       setMessage("Network issue. Please try again in a moment.");

@@ -1,29 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { updateLeadAction } from "@/app/admin/actions";
-import { getLeadById, leadStatuses, type LeadRecord } from "@/lib/lead-store";
+import { createWorkspaceFromLeadAction } from "@/app/admin/workspaces/actions";
+import { getLeadById, leadStatuses, statusLabel, type LeadRecord } from "@/lib/lead-store";
+import { getWorkspaceByLeadId, workspaceStatusLabel } from "@/lib/workspace-store";
 
 type LeadDetailPageProps = {
   params: Promise<{ id: string }>;
   searchParams?: Promise<{ saved?: string }>;
 };
-
-function statusLabel(status: LeadRecord["status"]) {
-  switch (status) {
-    case "new":
-      return "New";
-    case "contacted":
-      return "Contacted";
-    case "qualified":
-      return "Qualified";
-    case "proposal-sent":
-      return "Proposal sent";
-    case "won":
-      return "Won";
-    case "lost":
-      return "Lost";
-  }
-}
 
 function statusTone(status: LeadRecord["status"]) {
   switch (status) {
@@ -33,7 +18,7 @@ function statusTone(status: LeadRecord["status"]) {
       return "bg-amber-100 text-amber-800";
     case "qualified":
       return "bg-violet-100 text-violet-800";
-    case "proposal-sent":
+    case "proposal_sent":
       return "bg-orange-100 text-orange-800";
     case "won":
       return "bg-emerald-100 text-emerald-800";
@@ -51,6 +36,7 @@ export default async function LeadDetailPage({
   const { id } = await params;
   const query = (await searchParams) ?? {};
   const lead = await getLeadById(id);
+  const workspace = await getWorkspaceByLeadId(id);
 
   if (!lead) {
     notFound();
@@ -103,7 +89,31 @@ export default async function LeadDetailPage({
               <InfoBlock label="Budget" value={lead.budget} />
               <InfoBlock label="Source" value={lead.source} />
               <InfoBlock label="Created" value={new Date(lead.createdAt).toLocaleString()} />
+              <InfoBlock label="Last updated" value={new Date(lead.updatedAt).toLocaleString()} />
+              <InfoBlock label="Status changed" value={new Date(lead.statusUpdatedAt).toLocaleString()} />
               <InfoBlock label="Lead ID" value={lead.id} mono />
+            </div>
+
+            <div className="mt-8">
+              <SectionLabel>Activity</SectionLabel>
+              <div className="mt-3 space-y-3">
+                {lead.activity.length === 0 ? (
+                  <div className="rounded-2xl border border-black/6 bg-[#f7f5f1] px-4 py-3 text-sm text-slate">
+                    No activity recorded yet.
+                  </div>
+                ) : (
+                  lead.activity.map((entry) => (
+                    <div key={entry.id} className="rounded-2xl border border-black/6 bg-[#f7f5f1] px-4 py-3">
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-sm font-semibold text-ink">{entry.message}</p>
+                        <p className="font-mono text-xs uppercase tracking-[0.18em] text-slate">
+                          {new Date(entry.at).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
@@ -114,6 +124,42 @@ export default async function LeadDetailPage({
             </p>
             <div className="mt-6 rounded-2xl bg-white p-4 text-sm leading-7 text-slate">
               {lead.notes || "No internal notes yet."}
+            </div>
+
+            <div className="mt-6 border-t border-black/6 pt-6">
+              <SectionLabel>Client workspace</SectionLabel>
+              {workspace ? (
+                <div className="mt-3 rounded-2xl bg-white p-4">
+                  <p className="text-sm font-semibold text-ink">{workspace.title}</p>
+                  <p className="mt-2 text-sm leading-7 text-slate">
+                    Status: {workspaceStatusLabel(workspace.status)} · Client access {workspace.isActive ? "enabled" : "paused"}
+                  </p>
+                  <div className="mt-4 flex flex-col gap-2">
+                    <Link
+                      href={`/admin/workspaces/${workspace.id}`}
+                      className="inline-flex h-11 items-center justify-center rounded-full bg-ink px-4 text-sm font-semibold text-white"
+                    >
+                      Open workspace
+                    </Link>
+                    <Link
+                      href={`/client/${workspace.slug}`}
+                      className="inline-flex h-11 items-center justify-center rounded-full border border-black/8 px-4 text-sm font-semibold text-ink"
+                    >
+                      Open client view
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <form action={createWorkspaceFromLeadAction} className="mt-3">
+                  <input type="hidden" name="leadId" value={lead.id} />
+                  <button
+                    type="submit"
+                    className="inline-flex h-11 items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-white"
+                  >
+                    Create client workspace
+                  </button>
+                </form>
+              )}
             </div>
           </aside>
         </div>

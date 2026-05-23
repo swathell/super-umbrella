@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listLeads, type LeadRecord, leadStatuses } from "@/lib/lead-store";
+import { listLeads, type LeadRecord, leadStatuses, statusLabel } from "@/lib/lead-store";
 
 type LeadsPageProps = {
   searchParams?: Promise<{
@@ -7,25 +7,9 @@ type LeadsPageProps = {
     status?: string;
     archived?: string;
     sort?: string;
+    error?: string;
   }>;
 };
-
-function statusLabel(status: LeadRecord["status"]) {
-  switch (status) {
-    case "new":
-      return "New";
-    case "contacted":
-      return "Contacted";
-    case "qualified":
-      return "Qualified";
-    case "proposal-sent":
-      return "Proposal sent";
-    case "won":
-      return "Won";
-    case "lost":
-      return "Lost";
-  }
-}
 
 function statusTone(status: LeadRecord["status"]) {
   switch (status) {
@@ -35,7 +19,7 @@ function statusTone(status: LeadRecord["status"]) {
       return "bg-amber-100 text-amber-800";
     case "qualified":
       return "bg-violet-100 text-violet-800";
-    case "proposal-sent":
+    case "proposal_sent":
       return "bg-orange-100 text-orange-800";
     case "won":
       return "bg-emerald-100 text-emerald-800";
@@ -61,6 +45,7 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
         ? "include"
         : "exclude";
   const sort = params.sort === "oldest" ? "oldest" : "newest";
+  const error = params.error ?? "";
 
   const allVisibleLeads = await listLeads({ archived: "include", sort: "newest" });
   const leads = await listLeads({
@@ -102,6 +87,11 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
 
       <section className="rounded-[28px] border border-black/6 bg-white shadow-soft">
         <div className="border-b border-black/6 px-5 py-5 sm:px-6">
+          {error === "missing-id" ? (
+            <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+              Lead update failed because the record id was missing.
+            </div>
+          ) : null}
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.28em] text-slate">
@@ -110,7 +100,7 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
               <h2 className="mt-2 text-2xl font-bold tracking-tight">Recent inquiries</h2>
             </div>
 
-            <form className="grid gap-3 md:grid-cols-[minmax(220px,1fr)_180px_160px_150px]">
+            <form className="grid gap-3 md:grid-cols-[minmax(220px,1fr)_180px_160px_150px_auto]">
               <input
                 type="search"
                 name="q"
@@ -147,6 +137,12 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
                 <option value="newest">Newest first</option>
                 <option value="oldest">Oldest first</option>
               </select>
+              <button
+                type="submit"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-white"
+              >
+                Apply
+              </button>
             </form>
           </div>
         </div>

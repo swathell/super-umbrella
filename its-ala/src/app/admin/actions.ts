@@ -15,7 +15,7 @@ export async function updateLeadAction(formData: FormData) {
   const archived = parseArchived(formData.get("archived"));
 
   if (!id) {
-    return;
+    redirect("/admin/leads?error=missing-id");
   }
 
   await updateLead(id, {
