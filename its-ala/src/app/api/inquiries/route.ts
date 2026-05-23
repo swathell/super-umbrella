@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { saveInquiry } from "@/lib/inquiry-store";
+import { saveInquiry } from "@/lib/lead-store";
 import { validateInquiry } from "@/lib/inquiries";
 
 export async function POST(request: Request) {

@@ -13,10 +13,12 @@
 - a server-side inquiry API with validation
 - inquiry persistence using Vercel Postgres when configured
 - a local JSON fallback for development when Postgres is not configured
+- an internal leads workspace with list and detail views
+- lead status and notes updates
 
-## Inquiry record shape
+## Lead record shape
 
-Each submission is stored with:
+Each submission becomes a lead record with:
 
 - `id`
 - `createdAt`
@@ -28,6 +30,9 @@ Each submission is stored with:
 - `budget`
 - `projectSummary`
 - `source`
+- `status`
+- `notes`
+- `archived`
 
 ## Local setup
 
@@ -40,10 +45,16 @@ Each submission is stored with:
 4. Open:
    - `http://localhost:3000`
 
+## Internal workspace
+
+- `/admin/leads`: list view with search, status filtering, archived filtering, and recent-first sorting
+- `/admin/leads/[id]`: detail view with full project context, visible status, and internal notes editing
+
 ## Storage behavior
 
-- If `POSTGRES_URL` is available, inquiries are written to a Postgres table named `inquiries`.
-- If `POSTGRES_URL` is missing, inquiries are stored in `.data/inquiries.json` for local development.
+- If `POSTGRES_URL` is available, leads are written to a Postgres table named `inquiries`.
+- If `POSTGRES_URL` is missing, leads are stored in `.data/leads.json` for local development.
+- Existing local `.data/inquiries.json` data is migrated forward automatically when present.
 
 ## Environment variables
 
