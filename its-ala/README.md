@@ -6,6 +6,29 @@
 - the intake and lead capture flow
 - the future admin workspace for leads and projects
 
+## What is implemented now
+
+- a public-facing marketing site for custom apps, internal tools, and AI workflows
+- a responsive intake section with client-side feedback
+- a server-side inquiry API with validation
+- inquiry persistence using Vercel Postgres when configured
+- a local JSON fallback for development when Postgres is not configured
+
+## Inquiry record shape
+
+Each submission is stored with:
+
+- `id`
+- `createdAt`
+- `name`
+- `email`
+- `company`
+- `projectType`
+- `timeline`
+- `budget`
+- `projectSummary`
+- `source`
+
 ## Local setup
 
 1. Install dependencies:
@@ -14,29 +37,18 @@
    - `cp .env.example .env.local`
 3. Run the app:
    - `npm run dev`
+4. Open:
+   - `http://localhost:3000`
 
-## Vercel beginner setup
+## Storage behavior
 
-1. Create a GitHub repository and push this folder.
-2. In Vercel, click `Add New` -> `Project`.
-3. Import the GitHub repository.
-4. Let Vercel detect `Next.js`.
-5. Add environment variables in `Project Settings` -> `Environment Variables`.
-6. Deploy.
-7. Connect `itsala.com` later under `Domains`.
+- If `POSTGRES_URL` is available, inquiries are written to a Postgres table named `inquiries`.
+- If `POSTGRES_URL` is missing, inquiries are stored in `.data/inquiries.json` for local development.
 
-## Current scope
+## Environment variables
 
-- Marketing pages
-- Working intake UI and API route foundation
-- Lead storage via Vercel Postgres when configured
-- Local fallback storage for development
-- Basic admin leads list and detail views
-
-## Next phase
-
-- Email delivery with Resend
-- Authentication for admin routes
-- Lead status editing
-- Durable production-ready storage confirmation
-- Client workspaces
+- `NEXT_PUBLIC_SITE_URL`: base URL used by the app
+- `NOTIFICATION_EMAIL`: reserved for later email notification work
+- `RESEND_API_KEY`: reserved for later email delivery work
+- `POSTGRES_URL`: enables durable inquiry storage
+- `POSTGRES_PRISMA_URL`: optional companion Postgres setting for Vercel environments

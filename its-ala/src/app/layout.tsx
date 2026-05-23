@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Manrope } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { site } from "@/lib/site-data";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -17,8 +14,9 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: site.title,
-  description: site.description,
+  title: "Its Ala | Custom Apps, Internal Tools, and AI Workflows",
+  description:
+    "A trust-first software studio for founders and small teams that need custom apps, internal tools, and AI workflows built with speed and clarity.",
 };
 
 export default function RootLayout({
@@ -29,9 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${manrope.variable} ${plexMono.variable}`}>
-        <SiteHeader />
         {children}
-        <SiteFooter />
       </body>
     </html>
   );
