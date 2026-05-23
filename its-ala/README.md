@@ -19,6 +19,7 @@
 - password-gated admin protection
 - lightweight lead activity history for auditability
 - a minimal client workspace layer linked to converted leads
+- an Upstream operator workspace MVP for signal triage and briefing preparation
 
 ## Lead record shape
 
@@ -59,6 +60,7 @@ Each submission becomes a lead record with:
 - `/admin/login`: admin sign-in for protected routes
 - `/admin/workspaces`: index of active client workspaces
 - `/admin/workspaces/[id]`: operator workspace management page for client-visible projects
+- `/admin/upstream`: internal operator workspace for signal detection, organizations, workflow lanes, and briefings
 
 ## Client workspace MVP
 
@@ -84,6 +86,24 @@ Each submission becomes a lead record with:
 - Existing local `.data/inquiries.json` data is migrated forward automatically when present.
 - When Postgres is enabled, lead activity is also stored in a `lead_activity` table.
 - Client workspace data is stored in `project_workspaces` in Postgres, or `.data/workspaces.json` in local development.
+
+## Upstream workspace MVP
+
+- Upstream is intentionally separate from the client-facing site and delivery workspaces.
+- It is a narrow operator console for:
+  - capturing signals
+  - scoring readiness
+  - reconstructing organization context
+  - promoting strong signals into briefings
+  - moving items through a small operational pipeline
+- Core entities:
+  - `signals`
+  - `organizations`
+  - `briefings`
+- Storage:
+  - Postgres table `upstream_state` when `POSTGRES_URL` is configured
+  - `.data/upstream.json` in local development
+- The MVP ships with seeded sample state so the workflow can be evaluated immediately.
 
 ## Notifications
 

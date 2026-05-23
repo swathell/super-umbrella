@@ -31,6 +31,9 @@ export default function AdminLayout({
               <a href="/admin/workspaces" className="rounded-full bg-[#f7f5f1] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-ink">
                 Workspaces
               </a>
+              <a href="/admin/upstream" className="rounded-full bg-[#f7f5f1] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-ink">
+                Upstream
+              </a>
             </nav>
             <span className="font-semibold text-ink">Admin system status</span>
             <span className="rounded-full bg-[#f7f5f1] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate">
