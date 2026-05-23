@@ -289,29 +289,30 @@ async function listPostgresActivities(leadIds: string[]) {
     return new Map<string, LeadActivity[]>();
   }
 
-  const result = await sql`
-    SELECT id, lead_id, created_at, type, message
-    FROM lead_activity
-    WHERE lead_id = ANY(${leadIds})
-    ORDER BY created_at DESC
-  `;
-
   const map = new Map<string, LeadActivity[]>();
 
-  for (const row of result.rows) {
-    const leadId = String(row.lead_id);
-    const activity: LeadActivity = {
-      id: String(row.id),
-      at:
-        row.created_at instanceof Date
-          ? row.created_at.toISOString()
-          : new Date(String(row.created_at)).toISOString(),
-      type: String(row.type) as LeadActivityType,
-      message: String(row.message),
-    };
-    const existing = map.get(leadId) ?? [];
-    existing.push(activity);
-    map.set(leadId, existing);
+  for (const leadId of leadIds) {
+    const result = await sql`
+      SELECT id, lead_id, created_at, type, message
+      FROM lead_activity
+      WHERE lead_id = ${leadId}
+      ORDER BY created_at DESC
+    `;
+
+    for (const row of result.rows) {
+      const activity: LeadActivity = {
+        id: String(row.id),
+        at:
+          row.created_at instanceof Date
+            ? row.created_at.toISOString()
+            : new Date(String(row.created_at)).toISOString(),
+        type: String(row.type) as LeadActivityType,
+        message: String(row.message),
+      };
+      const existing = map.get(leadId) ?? [];
+      existing.push(activity);
+      map.set(leadId, existing);
+    }
   }
 
   return map;
