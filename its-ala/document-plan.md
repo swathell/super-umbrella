@@ -1,0 +1,5 @@
+- [x] Create `phase-summary-reference.pdf`
+- [x] Use the PDF workflow and produce a polished, readable reference layout
+- [x] Summarize the confirmed rollout state and the revenue-optimization layer
+- [x] Render/generate the PDF into `/workspace/output`
+- [x] Export the final PDF for download

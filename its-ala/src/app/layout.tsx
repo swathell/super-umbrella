@@ -14,9 +14,9 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Its Ala | Custom Apps, Internal Tools, and AI Workflows",
+  title: "ITSALA | AI-Powered Business Operating Systems",
   description:
-    "A trust-first software studio for founders and small teams that need custom apps, internal tools, and AI workflows built with speed and clarity.",
+    "ITSALA helps professional services firms centralize operations, automate workflows, manage clients, and deploy AI-enabled systems with serious trust signals from day one.",
 };
 
 export default function RootLayout({

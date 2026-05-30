@@ -119,14 +119,14 @@ export function InquiryForm() {
         />
       </div>
 
-      <Field
-        label="Company"
-        name="company"
-        value={values.company}
-        onChange={updateField}
-        error={errors.company}
-        placeholder="Company or team name"
-      />
+        <Field
+          label="Firm or company"
+          name="company"
+          value={values.company}
+          onChange={updateField}
+          error={errors.company}
+          placeholder="Firm, practice, or company name"
+        />
 
       <div className="grid gap-4 md:grid-cols-3">
         <SelectField
@@ -172,18 +172,18 @@ export function InquiryForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-semibold text-ink" htmlFor="projectSummary">
-          What needs to be built
+          What operational problem needs to be solved
         </label>
         <textarea
           id="projectSummary"
           value={values.projectSummary}
           onChange={(event) => updateField("projectSummary", event.target.value)}
-          placeholder="Share the workflow, bottleneck, or system you need built. Include what exists today and what a successful result would look like."
+          placeholder="Describe the workflow, bottleneck, or client delivery issue that needs to change. Include what exists today and what a better outcome would look like."
           className="min-h-40 w-full rounded-2xl border border-line bg-white/80 px-4 py-3 text-base text-ink outline-none transition focus:border-accent focus:ring-4 focus:ring-orange-100"
         />
         <div className="flex items-center justify-between text-sm">
           <span className={errors.projectSummary ? "text-red-600" : "text-slate"}>
-            {errors.projectSummary || "The more concrete this is, the faster the first reply can be."}
+            {errors.projectSummary || "A concrete operational problem leads to a sharper first conversation."}
           </span>
           <span className="font-mono text-xs text-slate">{summaryCount}/4000</span>
         </div>
@@ -191,15 +191,15 @@ export function InquiryForm() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-xl text-sm text-slate">
-          Best fit: founders and small teams with a defined workflow problem, a real use case,
-          and a clear need for speed.
+          Best fit: professional services teams with a real workflow bottleneck, client-delivery
+          friction, or a need for clearer internal operating visibility.
         </p>
         <button
           type="submit"
           disabled={isSubmitting}
           className="inline-flex min-h-14 items-center justify-center rounded-full bg-ink px-8 text-base font-semibold text-white transition hover:bg-night disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting ? "Sending inquiry..." : "Send inquiry"}
+          {isSubmitting ? "Sending request..." : "Request a demo"}
         </button>
       </div>
 
