@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { logoutAction } from "@/app/admin/login/actions";
 import { getStorageMode } from "@/lib/lead-store";
+import { getStorageHealth } from "@/lib/storage-health";
 
 export const metadata: Metadata = {
   title: "Admin | Its Ala",
@@ -10,12 +11,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const storageMode = getStorageMode();
+  const storageHealth = await getStorageHealth();
   const authConfigured =
     Boolean(process.env.ADMIN_PASSWORD) && Boolean(process.env.ADMIN_SESSION_SECRET);
 
@@ -40,6 +42,9 @@ export default function AdminLayout({
               Storage: {storageMode === "postgres" ? "Postgres" : "Local fallback"}
             </span>
             <span className="rounded-full bg-[#f7f5f1] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate">
+              DB health: {storageHealth.postgresReachable ? "Connected" : storageMode === "postgres" ? "Error" : "Fallback"}
+            </span>
+            <span className="rounded-full bg-[#f7f5f1] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate">
               Email: {process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL ? "Configured" : "Needs config"}
             </span>
             <span className="rounded-full bg-[#f7f5f1] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate">
@@ -54,6 +59,15 @@ export default function AdminLayout({
               Sign out
             </button>
           </form>
+        </div>
+        <div className="mb-4 rounded-[24px] border border-black/6 bg-white px-4 py-3 text-sm text-slate shadow-soft">
+          <p className="font-semibold text-ink">Storage readiness</p>
+          <p className="mt-1 leading-7">{storageHealth.message}</p>
+          {storageHealth.counts ? (
+            <p className="mt-2 font-mono text-xs uppercase tracking-[0.18em] text-slate">
+              Leads {storageHealth.counts.leads} · Workspaces {storageHealth.counts.workspaces} · Upstream rows {storageHealth.counts.upstreamStateRows}
+            </p>
+          ) : null}
         </div>
         {children}
       </div>

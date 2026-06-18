@@ -32,6 +32,8 @@ export type LeadRecord = {
   name: string;
   email: string;
   company?: string;
+  industry: string;
+  teamSize: string;
   projectType: string;
   timeline: string;
   budget: string;
@@ -101,6 +103,19 @@ export function statusLabel(status: LeadStatus) {
   }
 }
 
+export function formatLeadFacet(value: string) {
+  const specialCases: Record<string, string> = {
+    asap: "ASAP",
+    ai: "AI",
+  };
+
+  return value
+    .split("-")
+    .filter(Boolean)
+    .map((part) => specialCases[part] ?? part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 function normalizeStatus(value: string | undefined): LeadStatus {
   const normalized = (value ?? "").replace("-", "_");
   if (leadStatuses.includes(normalized as LeadStatus)) {
@@ -119,6 +134,8 @@ function toLeadRecord(data: InquiryInput): LeadRecord {
     name: data.name,
     email: data.email,
     company: data.company,
+    industry: data.industry,
+    teamSize: data.teamSize,
     projectType: data.projectType,
     timeline: data.timeline,
     budget: data.budget,
@@ -163,6 +180,8 @@ function normalizeLeadRecord(record: InquiryRecord | LeadRecord): LeadRecord {
     name: record.name,
     email: record.email,
     company: record.company,
+    industry: "industry" in record && typeof record.industry === "string" ? record.industry : "",
+    teamSize: "teamSize" in record && typeof record.teamSize === "string" ? record.teamSize : "",
     projectType: record.projectType,
     timeline: record.timeline,
     budget: record.budget,
@@ -178,7 +197,7 @@ function normalizeLeadRecord(record: InquiryRecord | LeadRecord): LeadRecord {
   };
 }
 
-async function ensurePostgresSchema() {
+export async function ensureLeadPostgresSchema() {
   await sql`
     CREATE TABLE IF NOT EXISTS inquiries (
       id TEXT PRIMARY KEY,
@@ -188,6 +207,8 @@ async function ensurePostgresSchema() {
       name TEXT NOT NULL,
       email TEXT NOT NULL,
       company TEXT,
+      industry TEXT NOT NULL DEFAULT '',
+      team_size TEXT NOT NULL DEFAULT '',
       project_type TEXT NOT NULL,
       timeline TEXT NOT NULL,
       budget TEXT NOT NULL,
@@ -214,6 +235,8 @@ async function ensurePostgresSchema() {
   await sql`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'new';`;
   await sql`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS notes TEXT NOT NULL DEFAULT '';`;
   await sql`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS archived BOOLEAN NOT NULL DEFAULT FALSE;`;
+  await sql`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS industry TEXT NOT NULL DEFAULT '';`;
+  await sql`ALTER TABLE inquiries ADD COLUMN IF NOT EXISTS team_size TEXT NOT NULL DEFAULT '';`;
 }
 
 async function readLocalLeads(): Promise<LeadRecord[]> {
@@ -272,6 +295,8 @@ function filterLeads(records: LeadRecord[], options: LeadListOptions) {
       record.name,
       record.email,
       record.company ?? "",
+      record.industry,
+      record.teamSize,
       record.projectSummary,
       record.budget,
       record.projectType,
@@ -339,6 +364,8 @@ function rowToLeadRecord(
     name: String(row.name),
     email: String(row.email),
     company: row.company ? String(row.company) : "",
+    industry: row.industry ? String(row.industry) : "",
+    teamSize: row.team_size ? String(row.team_size) : "",
     projectType: String(row.project_type),
     timeline: String(row.timeline),
     budget: String(row.budget),
@@ -352,7 +379,7 @@ function rowToLeadRecord(
 }
 
 async function listPostgresLeads(options: LeadListOptions): Promise<LeadRecord[]> {
-  await ensurePostgresSchema();
+  await ensureLeadPostgresSchema();
   const result = await sql`
     SELECT
       id,
@@ -362,6 +389,8 @@ async function listPostgresLeads(options: LeadListOptions): Promise<LeadRecord[]
       name,
       email,
       company,
+      industry,
+      team_size,
       project_type,
       timeline,
       budget,
@@ -381,7 +410,7 @@ async function listPostgresLeads(options: LeadListOptions): Promise<LeadRecord[]
 }
 
 async function getPostgresLeadById(id: string): Promise<LeadRecord | null> {
-  await ensurePostgresSchema();
+  await ensureLeadPostgresSchema();
   const result = await sql`
     SELECT
       id,
@@ -391,6 +420,8 @@ async function getPostgresLeadById(id: string): Promise<LeadRecord | null> {
       name,
       email,
       company,
+      industry,
+      team_size,
       project_type,
       timeline,
       budget,
@@ -422,7 +453,7 @@ async function recordPostgresActivity(leadId: string, entries: LeadActivity[]) {
 }
 
 async function updatePostgresLead(id: string, updates: LeadUpdateInput) {
-  await ensurePostgresSchema();
+  await ensureLeadPostgresSchema();
   const current = await getPostgresLeadById(id);
 
   if (!current) {
@@ -483,7 +514,7 @@ export async function saveInquiry(data: InquiryInput) {
   const usingPostgres = Boolean(process.env.POSTGRES_URL);
 
   if (usingPostgres) {
-    await ensurePostgresSchema();
+    await ensureLeadPostgresSchema();
     await sql`
       INSERT INTO inquiries (
         id,
@@ -493,6 +524,8 @@ export async function saveInquiry(data: InquiryInput) {
         name,
         email,
         company,
+        industry,
+        team_size,
         project_type,
         timeline,
         budget,
@@ -509,6 +542,8 @@ export async function saveInquiry(data: InquiryInput) {
         ${record.name},
         ${record.email},
         ${record.company ?? ""},
+        ${record.industry},
+        ${record.teamSize},
         ${record.projectType},
         ${record.timeline},
         ${record.budget},
