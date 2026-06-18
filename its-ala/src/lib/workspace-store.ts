@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { sql } from "@/lib/postgres";
+import { sql } from "@vercel/postgres";
 import type { LeadRecord } from "@/lib/lead-store";
 import { getLeadById } from "@/lib/lead-store";
 
