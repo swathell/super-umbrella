@@ -1,22 +1,35 @@
-# Schema Export Fix Bundle
+# Strong Storage Preflight Bundle
 
-The latest Vercel log shows the original `postgres.ts` type failure is gone.
-The remaining blocker is that `storage-health.ts` imports schema helpers that still are not exported:
+This is the no-more-blind-redeploy bundle.
 
-- `ensureUpstreamPostgresSchema` from `src/lib/upstream-store.ts`
-- `ensureWorkspacePostgresSchema` from `src/lib/workspace-store.ts`
+The latest Vercel logs prove `main` still has this problem:
 
-This bundle fixes only that.
+```ts
+storage-health.ts imports names that upstream-store.ts and workspace-store.ts do not export.
+```
 
-## Recommended use
+This script patches `storage-health.ts` to stop importing the missing names and use already-exported store functions instead:
+
+```ts
+readUpstreamState()
+listWorkspaces()
+```
+
+Those functions already call each store's private `ensurePostgresSchema()` when `POSTGRES_URL` is configured.
+
+## Use
 
 From the repository root:
 
 ```bash
-node apply-schema-export-fix.mjs
+node apply-and-preflight-storage-fix.mjs
 ```
 
-Then:
+The script will:
+
+1. Patch `its-ala/src/lib/storage-health.ts`
+2. Verify the missing export names are gone
+3. Run:
 
 ```bash
 cd its-ala
@@ -24,17 +37,9 @@ npm run typecheck
 npm run build
 ```
 
-## What the script does
+Only commit and redeploy after this script passes locally.
 
-It appends these export aliases:
+## Why this is stronger
 
-```ts
-export { ensurePostgresSchema as ensureUpstreamPostgresSchema };
-export { ensurePostgresSchema as ensureWorkspacePostgresSchema };
-```
-
-It does not rename the internal function, so existing calls inside each store remain intact.
-
-## Why this is the right second fix
-
-`storage-health.ts` already expects store-owned schema helpers. The stores already have private `ensurePostgresSchema()` functions. The cleanest unblock is to export those existing functions under the expected names.
+The previous deploy attempts were checking the fix only after Vercel cloned the repo.
+This script refuses to finish unless the exact missing-import issue is gone and the app passes local TypeScript/build checks.
