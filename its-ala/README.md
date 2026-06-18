@@ -1,35 +1,33 @@
-# Strong Storage Preflight Bundle
+# Exact Storage Health Replacement
 
-This is the no-more-blind-redeploy bundle.
+Replace this file in the repo:
 
-The latest Vercel logs prove `main` still has this problem:
-
-```ts
-storage-health.ts imports names that upstream-store.ts and workspace-store.ts do not export.
+```txt
+its-ala/src/lib/storage-health.ts
 ```
 
-This script patches `storage-health.ts` to stop importing the missing names and use already-exported store functions instead:
+with:
 
-```ts
-readUpstreamState()
-listWorkspaces()
+```txt
+exact-storage-health-replacement/its-ala/src/lib/storage-health.ts
 ```
 
-Those functions already call each store's private `ensurePostgresSchema()` when `POSTGRES_URL` is configured.
+This removes the two imports that Vercel keeps failing on:
 
-## Use
+```ts
+ensureUpstreamPostgresSchema
+ensureWorkspacePostgresSchema
+```
 
-From the repository root:
+Before committing, verify from the repository root:
 
 ```bash
-node apply-and-preflight-storage-fix.mjs
+grep -R "ensureUpstreamPostgresSchema\\|ensureWorkspacePostgresSchema" its-ala/src/lib/storage-health.ts
 ```
 
-The script will:
+That command must print nothing.
 
-1. Patch `its-ala/src/lib/storage-health.ts`
-2. Verify the missing export names are gone
-3. Run:
+Then run:
 
 ```bash
 cd its-ala
@@ -37,9 +35,4 @@ npm run typecheck
 npm run build
 ```
 
-Only commit and redeploy after this script passes locally.
-
-## Why this is stronger
-
-The previous deploy attempts were checking the fix only after Vercel cloned the repo.
-This script refuses to finish unless the exact missing-import issue is gone and the app passes local TypeScript/build checks.
+Only commit after both pass.

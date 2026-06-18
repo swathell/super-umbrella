@@ -1,7 +1,7 @@
 import { sql } from "@vercel/postgres";
 import { ensureLeadPostgresSchema, getStorageMode } from "@/lib/lead-store";
-import { ensureUpstreamPostgresSchema } from "@/lib/upstream-store";
-import { ensureWorkspacePostgresSchema } from "@/lib/workspace-store";
+import { readUpstreamState } from "@/lib/upstream-store";
+import { listWorkspaces } from "@/lib/workspace-store";
 
 export type StorageHealth = {
   mode: "postgres" | "local-file";
@@ -32,8 +32,8 @@ export async function getStorageHealth(): Promise<StorageHealth> {
   try {
     await sql`SELECT 1`;
     await ensureLeadPostgresSchema();
-    await ensureWorkspacePostgresSchema();
-    await ensureUpstreamPostgresSchema();
+    await listWorkspaces();
+    await readUpstreamState();
 
     const [leadCount, workspaceCount, upstreamRows] = await Promise.all([
       sql`SELECT COUNT(*)::int AS count FROM inquiries`,
