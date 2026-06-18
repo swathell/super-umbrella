@@ -2,6 +2,8 @@ export type InquiryInput = {
   name: string;
   email: string;
   company?: string;
+  industry: string;
+  teamSize: string;
   projectType: string;
   timeline: string;
   budget: string;
@@ -19,10 +21,28 @@ type ValidationResult =
   | { success: false; errors: Record<string, string> };
 
 const PROJECT_TYPES = new Set([
+  "client-delivery",
+  "internal-operations",
+  "revenue-visibility",
   "custom-app",
   "internal-tool",
   "ai-workflow",
   "mixed",
+]);
+
+const INDUSTRIES = new Set([
+  "consulting",
+  "venture-advisory",
+  "professional-services",
+  "enterprise-operations",
+  "other",
+]);
+
+const TEAM_SIZES = new Set([
+  "1-10",
+  "11-50",
+  "51-200",
+  "201-plus",
 ]);
 
 const TIMELINES = new Set([
@@ -50,6 +70,8 @@ export function validateInquiry(payload: unknown): ValidationResult {
     name: normalizeText(raw?.name, 120),
     email: normalizeText(raw?.email, 160).toLowerCase(),
     company: normalizeText(raw?.company, 160),
+    industry: normalizeText(raw?.industry, 80),
+    teamSize: normalizeText(raw?.teamSize, 80),
     projectType: normalizeText(raw?.projectType, 80),
     timeline: normalizeText(raw?.timeline, 80),
     budget: normalizeText(raw?.budget, 80),
@@ -67,8 +89,16 @@ export function validateInquiry(payload: unknown): ValidationResult {
     errors.email = "Please enter a valid email address.";
   }
 
+  if (!INDUSTRIES.has(data.industry)) {
+    errors.industry = "Please choose your industry.";
+  }
+
+  if (!TEAM_SIZES.has(data.teamSize)) {
+    errors.teamSize = "Please choose a team size.";
+  }
+
   if (!PROJECT_TYPES.has(data.projectType)) {
-    errors.projectType = "Please choose the type of project.";
+    errors.projectType = "Please choose the primary use case.";
   }
 
   if (!TIMELINES.has(data.timeline)) {
