@@ -1,0 +1,10 @@
+diff --git a/its-ala/src/lib/upstream-store.ts b/its-ala/src/lib/upstream-store.ts
+--- a/its-ala/src/lib/upstream-store.ts
++++ b/its-ala/src/lib/upstream-store.ts
+@@
++export { ensurePostgresSchema as ensureUpstreamPostgresSchema };
+diff --git a/its-ala/src/lib/workspace-store.ts b/its-ala/src/lib/workspace-store.ts
+--- a/its-ala/src/lib/workspace-store.ts
++++ b/its-ala/src/lib/workspace-store.ts
+@@
++export { ensurePostgresSchema as ensureWorkspacePostgresSchema };

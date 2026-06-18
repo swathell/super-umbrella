@@ -1,152 +1,40 @@
-# Its Ala
+# Schema Export Fix Bundle
 
-`Its Ala` is a Vercel-ready Next.js project for:
+The latest Vercel log shows the original `postgres.ts` type failure is gone.
+The remaining blocker is that `storage-health.ts` imports schema helpers that still are not exported:
 
-- the public trust-first website
-- the intake and lead capture flow
-- the future admin workspace for leads and projects
+- `ensureUpstreamPostgresSchema` from `src/lib/upstream-store.ts`
+- `ensureWorkspacePostgresSchema` from `src/lib/workspace-store.ts`
 
-## What is implemented now
+This bundle fixes only that.
 
-- a public-facing marketing site for custom apps, internal tools, and AI workflows
-- a responsive intake section with client-side feedback
-- a server-side inquiry API with validation
-- inquiry persistence using Vercel Postgres when configured
-- a local JSON fallback for development when Postgres is not configured
-- an internal leads workspace with list and detail views
-- lead status and notes updates
-- Resend email notifications for new leads
-- password-gated admin protection
-- lightweight lead activity history for auditability
-- a minimal client workspace layer linked to converted leads
-- an Upstream operator workspace MVP for signal triage and briefing preparation
+## Recommended use
 
-## Lead record shape
+From the repository root:
 
-Each submission becomes a lead record with:
+```bash
+node apply-schema-export-fix.mjs
+```
 
-- `id`
-- `createdAt`
-- `updatedAt`
-- `statusUpdatedAt`
-- `name`
-- `email`
-- `company`
-- `projectType`
-- `timeline`
-- `budget`
-- `projectSummary`
-- `source`
-- `status`
-- `notes`
-- `archived`
-- `activity`
+Then:
 
-## Local setup
+```bash
+cd its-ala
+npm run typecheck
+npm run build
+```
 
-1. Install dependencies:
-   - `npm install`
-2. Copy env file:
-   - `cp .env.example .env.local`
-3. Run the app:
-   - `npm run dev`
-4. Open:
-   - `http://localhost:3000`
+## What the script does
 
-## Internal workspace
+It appends these export aliases:
 
-- `/admin/leads`: list view with search, status filtering, archived filtering, and recent-first sorting
-- `/admin/leads/[id]`: detail view with full project context, visible status, and internal notes editing
-- `/admin/login`: admin sign-in for protected routes
-- `/admin/workspaces`: index of active client workspaces
-- `/admin/workspaces/[id]`: operator workspace management page for client-visible projects
-- `/admin/upstream`: internal operator workspace for signal detection, organizations, workflow lanes, and briefings
+```ts
+export { ensurePostgresSchema as ensureUpstreamPostgresSchema };
+export { ensurePostgresSchema as ensureWorkspacePostgresSchema };
+```
 
-## Client workspace MVP
+It does not rename the internal function, so existing calls inside each store remain intact.
 
-- Workspaces are created from a lead record when a project is ready to move into active delivery.
-- Each workspace includes:
-  - overview
-  - current focus
-  - next step
-  - milestones
-  - progress updates
-  - shared links
-  - contact guidance
-- Client access uses a per-workspace access code and a lightweight signed session.
-- Client-facing route:
-  - `/client/[slug]`
-- Client access screen:
-  - `/client/[slug]/login`
+## Why this is the right second fix
 
-## Storage behavior
-
-- If `POSTGRES_URL` is available, leads are written to a Postgres table named `inquiries`.
-- If `POSTGRES_URL` is missing, leads are stored in `.data/leads.json` for local development.
-- Existing local `.data/inquiries.json` data is migrated forward automatically when present.
-- When Postgres is enabled, lead activity is also stored in a `lead_activity` table.
-- Client workspace data is stored in `project_workspaces` in Postgres, or `.data/workspaces.json` in local development.
-
-## Go-live database setup
-
-1. Create a production Postgres database.
-2. Set `POSTGRES_URL` in your deployment environment.
-3. Deploy the app.
-4. Open `/api/health/storage`.
-5. Confirm the response shows:
-   - `mode: "postgres"`
-   - `postgresReachable: true`
-   - `schemaReady: true`
-6. Open `/admin/leads` and confirm the admin banner shows `DB health: Connected`.
-
-The app creates its required tables automatically on first use:
-
-- `inquiries`
-- `lead_activity`
-- `project_workspaces`
-- `upstream_state`
-
-If `POSTGRES_URL` is present but invalid, the storage health route returns an explicit error instead of silently falling back.
-
-## Upstream workspace MVP
-
-- Upstream is intentionally separate from the client-facing site and delivery workspaces.
-- It is a narrow operator console for:
-  - capturing signals
-  - scoring readiness
-  - reconstructing organization context
-  - promoting strong signals into briefings
-  - moving items through a small operational pipeline
-- Core entities:
-  - `signals`
-  - `organizations`
-  - `briefings`
-- Storage:
-  - Postgres table `upstream_state` when `POSTGRES_URL` is configured
-  - `.data/upstream.json` in local development
-- The MVP ships with seeded sample state so the workflow can be evaluated immediately.
-
-## Notifications
-
-- New lead notifications are sent through Resend when `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and `NOTIFICATION_EMAIL` are configured.
-- Submitter confirmation email is sent by default and can be disabled with `SEND_CONFIRMATION_EMAIL=false`.
-- If email config is incomplete, lead saving still succeeds and the system logs a clear warning instead of failing silently.
-
-## Admin protection
-
-- In production, `/admin/*` routes require a password-gated session using `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET`.
-- In local development, auth is bypassed only when those variables are not configured, to keep local iteration practical.
-- If admin auth is misconfigured in production, the login screen explains what is missing.
-
-## Environment variables
-
-- `NEXT_PUBLIC_SITE_URL`: base URL used by the app
-- `NOTIFICATION_EMAIL`: operator inbox for new lead notifications
-- `RESEND_API_KEY`: Resend API key for outbound email
-- `RESEND_FROM_EMAIL`: verified sender used for Resend email delivery
-- `SEND_CONFIRMATION_EMAIL`: set to `false` to disable submitter confirmation email
-- `POSTGRES_URL`: enables durable inquiry storage
-- `POSTGRES_PRISMA_URL`: optional companion Postgres setting for Vercel environments
-- `ADMIN_PASSWORD`: password used for the admin login screen
-- `ADMIN_SESSION_SECRET`: secret used to sign the admin session cookie
-- `CLIENT_SESSION_SECRET`: optional dedicated secret for client workspace sessions; falls back to `ADMIN_SESSION_SECRET` when omitted
+`storage-health.ts` already expects store-owned schema helpers. The stores already have private `ensurePostgresSchema()` functions. The cleanest unblock is to export those existing functions under the expected names.
