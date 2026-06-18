@@ -1,4 +1,7 @@
-import { sql } from "@/lib/postgres";
+import { sql } from "@vercel/postgres";
+import { ensureLeadPostgresSchema, getStorageMode } from "@/lib/lead-store";
+import { ensureUpstreamPostgresSchema } from "@/lib/upstream-store";
+import { ensureWorkspacePostgresSchema } from "@/lib/workspace-store";
 
 export type StorageHealth = {
   mode: "postgres" | "local-file";
@@ -6,59 +9,60 @@ export type StorageHealth = {
   postgresReachable: boolean;
   schemaReady: boolean;
   message: string;
-  tables?: Record<string, boolean>;
+  counts?: {
+    leads: number;
+    workspaces: number;
+    upstreamStateRows: number;
+  };
 };
 
-const expectedTables = [
-  "inquiries",
-  "lead_activity",
-  "project_workspaces",
-  "upstream_state",
-];
-
 export async function getStorageHealth(): Promise<StorageHealth> {
-  if (!process.env.POSTGRES_URL) {
+  const mode = getStorageMode();
+
+  if (mode === "local-file") {
     return {
-      mode: "local-file",
+      mode,
       postgresConfigured: false,
       postgresReachable: false,
       schemaReady: false,
-      message: "POSTGRES_URL is missing. The app is using local fallback storage where supported.",
+      message: "POSTGRES_URL is missing. The app is using the local file fallback.",
     };
   }
 
   try {
-    await sql`SELECT 1 AS ok;`;
+    await sql`SELECT 1`;
+    await ensureLeadPostgresSchema();
+    await ensureWorkspacePostgresSchema();
+    await ensureUpstreamPostgresSchema();
 
-    const tableRows = await sql`
-      SELECT table_name
-      FROM information_schema.tables
-      WHERE table_schema = 'public'
-      AND table_name = ANY(${expectedTables})
-    `;
-
-    const present = new Set(tableRows.rows.map((row) => String(row.table_name)));
-    const tables = Object.fromEntries(expectedTables.map((table) => [table, present.has(table)]));
-    const schemaReady = expectedTables.every((table) => tables[table]);
+    const [leadCount, workspaceCount, upstreamRows] = await Promise.all([
+      sql`SELECT COUNT(*)::int AS count FROM inquiries`,
+      sql`SELECT COUNT(*)::int AS count FROM project_workspaces`,
+      sql`SELECT COUNT(*)::int AS count FROM upstream_state`,
+    ]);
 
     return {
-      mode: "postgres",
+      mode,
       postgresConfigured: true,
       postgresReachable: true,
-      schemaReady,
-      tables,
-      message: schemaReady
-        ? "Postgres is reachable and expected tables are present."
-        : "Postgres is reachable, but one or more expected tables are not present yet. Visit the admin areas or submit an inquiry to initialize schema.",
+      schemaReady: true,
+      message: "Postgres is connected and all application tables are ready.",
+      counts: {
+        leads: Number(leadCount.rows[0]?.count ?? 0),
+        workspaces: Number(workspaceCount.rows[0]?.count ?? 0),
+        upstreamStateRows: Number(upstreamRows.rows[0]?.count ?? 0),
+      },
     };
   } catch (error) {
-    const message = error instanceof Error ? `${error.name} - ${error.message}` : String(error);
     return {
-      mode: "postgres",
+      mode,
       postgresConfigured: true,
       postgresReachable: false,
       schemaReady: false,
-      message: `POSTGRES_URL is set, but the database could not be reached or initialized: ${message}`,
+      message:
+        error instanceof Error
+          ? `POSTGRES_URL is set, but the database could not be reached or initialized: ${error.message}`
+          : "POSTGRES_URL is set, but the database could not be reached or initialized.",
     };
   }
 }
