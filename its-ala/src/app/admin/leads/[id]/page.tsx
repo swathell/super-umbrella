@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { updateLeadAction } from "@/app/admin/actions";
 import { createWorkspaceFromLeadAction } from "@/app/admin/workspaces/actions";
-import { getLeadById, leadStatuses, statusLabel, type LeadRecord } from "@/lib/lead-store";
+import { formatLeadFacet, getLeadById, leadStatuses, statusLabel, type LeadRecord } from "@/lib/lead-store";
 import { getWorkspaceByLeadId, workspaceStatusLabel } from "@/lib/workspace-store";
 
 type LeadDetailPageProps = {
@@ -55,6 +55,9 @@ export default async function LeadDetailPage({
               <p className="mt-2 text-sm text-slate">
                 {lead.company || "No company provided"} · {lead.email}
               </p>
+              <p className="mt-2 text-xs uppercase tracking-[0.18em] text-slate">
+                {[lead.industry, lead.teamSize].filter(Boolean).map(formatLeadFacet).join(" · ")}
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <span
@@ -84,8 +87,10 @@ export default async function LeadDetailPage({
             </div>
 
             <div className="mt-8 grid gap-6 md:grid-cols-2">
-              <InfoBlock label="Project type" value={lead.projectType} />
-              <InfoBlock label="Timeline" value={lead.timeline} />
+              <InfoBlock label="Industry" value={lead.industry ? formatLeadFacet(lead.industry) : "Not provided"} />
+              <InfoBlock label="Team size" value={lead.teamSize ? formatLeadFacet(lead.teamSize) : "Not provided"} />
+              <InfoBlock label="Project type" value={formatLeadFacet(lead.projectType)} />
+              <InfoBlock label="Timeline" value={formatLeadFacet(lead.timeline)} />
               <InfoBlock label="Budget" value={lead.budget} />
               <InfoBlock label="Source" value={lead.source} />
               <InfoBlock label="Created" value={new Date(lead.createdAt).toLocaleString()} />

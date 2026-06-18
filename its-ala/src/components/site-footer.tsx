@@ -1,7 +1,8 @@
 const footerLinks = [
-  { href: "/product", label: "Platform overview" },
-  { href: "/trust", label: "Trust center" },
-  { href: "/#contact", label: "Book a demo" },
+  { href: "/product", label: "Product" },
+  { href: "/solutions", label: "Solutions" },
+  { href: "/security", label: "Security" },
+  { href: "/#contact", label: "Request demo" },
 ];
 
 export function SiteFooter() {
@@ -26,11 +27,10 @@ export function SiteFooter() {
           </div>
         </div>
         <div>
-          <p className="font-semibold text-ink">Trust</p>
+          <p className="font-semibold text-ink">Contact</p>
           <div className="mt-3 space-y-2">
-            <p>Security-first workflow design</p>
-            <p>Dedicated environments available</p>
-            <p>Operational visibility from intake to delivery</p>
+            <p>hello@itsala.com</p>
+            <p>Built for consulting, advisory, and operationally serious teams.</p>
           </div>
         </div>
       </div>

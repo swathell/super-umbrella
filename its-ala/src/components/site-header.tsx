@@ -1,13 +1,13 @@
 const primaryLinks = [
-  { href: "/product", label: "Platform" },
-  { href: "/trust", label: "Trust" },
-  { href: "/#contact", label: "Book a demo" },
+  { href: "/product", label: "Product" },
+  { href: "/solutions", label: "Solutions" },
+  { href: "/security", label: "Security" },
 ];
 
 const sectionLinks = [
-  { href: "/#who-we-serve", label: "Who we serve" },
-  { href: "/#platform", label: "How it works" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/#built-for", label: "Built for" },
+  { href: "/#walkthrough", label: "Walkthrough" },
+  { href: "/#about", label: "About" },
 ];
 
 export function SiteHeader() {
@@ -30,7 +30,7 @@ export function SiteHeader() {
           href="/#contact"
           className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-night transition hover:bg-sand"
         >
-          Book a demo
+          Request demo
         </a>
       </div>
 

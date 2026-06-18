@@ -1,4 +1,4 @@
-import type { LeadRecord, StorageMode } from "@/lib/lead-store";
+import { formatLeadFacet, type LeadRecord, type StorageMode } from "@/lib/lead-store";
 
 type NotificationOutcome = "sent" | "skipped" | "failed";
 
@@ -75,13 +75,15 @@ export async function sendLeadNotifications({
   } else {
     const operatorResult = await sendResendEmail({
       to: notificationEmail,
-      subject: `New lead: ${lead.name} (${lead.projectType})`,
+      subject: `New lead: ${lead.name} (${formatLeadFacet(lead.projectType)})`,
       html: `
         <h2>New project inquiry received</h2>
         <p><strong>Name:</strong> ${lead.name}</p>
         <p><strong>Email:</strong> ${lead.email}</p>
         <p><strong>Company:</strong> ${lead.company || "Not provided"}</p>
-        <p><strong>Project type:</strong> ${lead.projectType}</p>
+        <p><strong>Industry:</strong> ${lead.industry ? formatLeadFacet(lead.industry) : "Not provided"}</p>
+        <p><strong>Team size:</strong> ${lead.teamSize ? formatLeadFacet(lead.teamSize) : "Not provided"}</p>
+        <p><strong>Project type:</strong> ${formatLeadFacet(lead.projectType)}</p>
         <p><strong>Timeline:</strong> ${lead.timeline}</p>
         <p><strong>Budget:</strong> ${lead.budget}</p>
         <p><strong>Storage:</strong> ${storage}</p>
@@ -110,7 +112,8 @@ export async function sendLeadNotifications({
       html: `
         <h2>Inquiry received</h2>
         <p>Thanks for reaching out. Your project inquiry is in review.</p>
-        <p><strong>Project type:</strong> ${lead.projectType}</p>
+        <p><strong>Project type:</strong> ${formatLeadFacet(lead.projectType)}</p>
+        <p><strong>Industry:</strong> ${lead.industry ? formatLeadFacet(lead.industry) : "Not provided"}</p>
         <p><strong>Timeline:</strong> ${lead.timeline}</p>
         <p><strong>Budget:</strong> ${lead.budget}</p>
         <p>We will follow up as soon as possible.</p>

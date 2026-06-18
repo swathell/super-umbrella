@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listLeads, type LeadRecord, leadStatuses, statusLabel } from "@/lib/lead-store";
+import { formatLeadFacet, listLeads, type LeadRecord, leadStatuses, statusLabel } from "@/lib/lead-store";
 
 type LeadsPageProps = {
   searchParams?: Promise<{
@@ -184,6 +184,9 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
                         <div className="mt-1 text-sm text-slate">
                           {lead.company || "No company provided"}
                         </div>
+                        <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate">
+                          {[lead.industry, lead.teamSize].filter(Boolean).map(formatLeadFacet).join(" · ") || "Unclassified"}
+                        </div>
                       </Link>
                     </td>
                     <td className="border-b border-black/6 px-6 py-5">
@@ -193,7 +196,7 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
                           {lead.projectSummary.length > 140 ? "..." : ""}
                         </div>
                         <div className="mt-2 text-xs uppercase tracking-[0.2em] text-slate">
-                          {lead.projectType} · {lead.timeline}
+                          {formatLeadFacet(lead.projectType)} · {formatLeadFacet(lead.timeline)}
                         </div>
                       </Link>
                     </td>

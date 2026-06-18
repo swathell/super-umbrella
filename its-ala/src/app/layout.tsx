@@ -14,9 +14,9 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ITSALA | AI-Powered Business Operating Systems",
+  title: "ITSALA | AI-Powered Operating System for Professional Services",
   description:
-    "ITSALA helps professional services firms centralize operations, automate workflows, manage clients, and deploy AI-enabled systems with serious trust signals from day one.",
+    "ITSALA helps professional services firms centralize operations, automate workflows, manage clients, and deploy secure AI-assisted business processes from one platform.",
 };
 
 export default function RootLayout({

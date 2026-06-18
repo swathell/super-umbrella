@@ -87,6 +87,27 @@ Each submission becomes a lead record with:
 - When Postgres is enabled, lead activity is also stored in a `lead_activity` table.
 - Client workspace data is stored in `project_workspaces` in Postgres, or `.data/workspaces.json` in local development.
 
+## Go-live database setup
+
+1. Create a production Postgres database.
+2. Set `POSTGRES_URL` in your deployment environment.
+3. Deploy the app.
+4. Open `/api/health/storage`.
+5. Confirm the response shows:
+   - `mode: "postgres"`
+   - `postgresReachable: true`
+   - `schemaReady: true`
+6. Open `/admin/leads` and confirm the admin banner shows `DB health: Connected`.
+
+The app creates its required tables automatically on first use:
+
+- `inquiries`
+- `lead_activity`
+- `project_workspaces`
+- `upstream_state`
+
+If `POSTGRES_URL` is present but invalid, the storage health route returns an explicit error instead of silently falling back.
+
 ## Upstream workspace MVP
 
 - Upstream is intentionally separate from the client-facing site and delivery workspaces.
