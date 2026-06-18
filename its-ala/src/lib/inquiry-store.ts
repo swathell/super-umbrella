@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { sql } from "@vercel/postgres";
+import { sql } from "@/lib/postgres";
 import type { InquiryInput, InquiryRecord } from "@/lib/inquiries";
 
 const dataDir = path.join(process.cwd(), ".data");

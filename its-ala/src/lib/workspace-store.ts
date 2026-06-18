@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { sql } from "@vercel/postgres";
+import { sql } from "@/lib/postgres";
 import type { LeadRecord } from "@/lib/lead-store";
 import { getLeadById } from "@/lib/lead-store";
 
@@ -222,7 +222,7 @@ function defaultWorkspaceFromLead(lead: LeadRecord): ProjectWorkspace {
   };
 }
 
-export async function ensureWorkspacePostgresSchema() {
+async function ensurePostgresSchema() {
   await sql`
     CREATE TABLE IF NOT EXISTS project_workspaces (
       id TEXT PRIMARY KEY,
@@ -325,7 +325,7 @@ export function workspaceStatusLabel(status: WorkspaceStatus) {
 
 export async function getWorkspaceByLeadId(leadId: string) {
   if (process.env.POSTGRES_URL) {
-    await ensureWorkspacePostgresSchema();
+    await ensurePostgresSchema();
     const result = await sql`
       SELECT * FROM project_workspaces WHERE lead_id = ${leadId} LIMIT 1
     `;
@@ -338,7 +338,7 @@ export async function getWorkspaceByLeadId(leadId: string) {
 
 export async function getWorkspaceById(id: string) {
   if (process.env.POSTGRES_URL) {
-    await ensureWorkspacePostgresSchema();
+    await ensurePostgresSchema();
     const result = await sql`
       SELECT * FROM project_workspaces WHERE id = ${id} LIMIT 1
     `;
@@ -351,7 +351,7 @@ export async function getWorkspaceById(id: string) {
 
 export async function getWorkspaceBySlug(slug: string) {
   if (process.env.POSTGRES_URL) {
-    await ensureWorkspacePostgresSchema();
+    await ensurePostgresSchema();
     const result = await sql`
       SELECT * FROM project_workspaces WHERE slug = ${slug} LIMIT 1
     `;
@@ -364,7 +364,7 @@ export async function getWorkspaceBySlug(slug: string) {
 
 export async function listWorkspaces() {
   if (process.env.POSTGRES_URL) {
-    await ensureWorkspacePostgresSchema();
+    await ensurePostgresSchema();
     const result = await sql`
       SELECT * FROM project_workspaces ORDER BY updated_at DESC
     `;
@@ -391,7 +391,7 @@ export async function createWorkspaceFromLead(leadId: string) {
   const workspace = defaultWorkspaceFromLead(lead);
 
   if (process.env.POSTGRES_URL) {
-    await ensureWorkspacePostgresSchema();
+    await ensurePostgresSchema();
     await sql`
       INSERT INTO project_workspaces (
         id,
@@ -467,7 +467,7 @@ export async function updateWorkspaceBase(id: string, updates: WorkspaceBaseUpda
   };
 
   if (process.env.POSTGRES_URL) {
-    await ensureWorkspacePostgresSchema();
+    await ensurePostgresSchema();
     await sql`
       UPDATE project_workspaces
       SET
@@ -574,7 +574,7 @@ export async function addWorkspaceResource(
 
 async function persistWorkspace(next: ProjectWorkspace) {
   if (process.env.POSTGRES_URL) {
-    await ensureWorkspacePostgresSchema();
+    await ensurePostgresSchema();
     await sql`
       UPDATE project_workspaces
       SET

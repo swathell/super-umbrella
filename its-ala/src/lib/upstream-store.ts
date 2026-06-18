@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { sql } from "@vercel/postgres";
+import { sql } from "@/lib/postgres";
 
 export type SignalStage =
   | "captured"
@@ -279,7 +279,7 @@ function seedState(): UpstreamState {
   return { organizations, signals, briefings };
 }
 
-export async function ensureUpstreamPostgresSchema() {
+async function ensurePostgresSchema() {
   await sql`
     CREATE TABLE IF NOT EXISTS upstream_state (
       id TEXT PRIMARY KEY,
@@ -308,7 +308,7 @@ async function writeLocalState(state: UpstreamState) {
 
 export async function readUpstreamState() {
   if (process.env.POSTGRES_URL) {
-    await ensureUpstreamPostgresSchema();
+    await ensurePostgresSchema();
     const result = await sql`
       SELECT payload FROM upstream_state WHERE id = 'default' LIMIT 1
     `;
@@ -329,7 +329,7 @@ export async function readUpstreamState() {
 
 async function writeUpstreamState(state: UpstreamState) {
   if (process.env.POSTGRES_URL) {
-    await ensureUpstreamPostgresSchema();
+    await ensurePostgresSchema();
     await sql`
       INSERT INTO upstream_state (id, payload, updated_at)
       VALUES ('default', ${JSON.stringify(state)}::jsonb, ${nowIso()})
